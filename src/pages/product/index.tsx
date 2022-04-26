@@ -32,9 +32,7 @@ export default function Product({categoryList}: CategoryProps) {
   const [categorySelected, setCategorySelected] = useState(0);
 
   function handleFile(e: ChangeEvent<HTMLInputElement>){
-    console.log('entrei')
     if(!e.target.files) return
-    console.log('passei')
 
     const image = e.target.files[0]
 
@@ -108,6 +106,7 @@ export default function Product({categoryList}: CategoryProps) {
             <input type="file" key={inputKey || ''} accept="image/png, image/jpeg" onChange={handleFile} />
               
             {avatarUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img 
                 className={styles.preview}
                 src={avatarUrl} 

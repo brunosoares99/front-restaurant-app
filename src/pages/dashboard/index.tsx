@@ -43,7 +43,6 @@ export type OrderItemprops = {
 
 
 export default function Dashboard({ orders }: HomeProps) {
-
   const [orderList, setOrderList] = useState(orders || [])
   const [modalItem, setModalItem] = useState<OrderItemprops[]>()
   const [modalVisible, setModalVisible] = useState(false)
@@ -59,9 +58,31 @@ export default function Dashboard({ orders }: HomeProps) {
         order_id: id
       }
     })
-
-    setModalItem(response.data)
+    setModalItem(response.data.orders)
     setModalVisible(true);
+  }
+
+  async function handleFinishItem(id: string) {
+    if(!id) return
+    const apiClient = setupAPIClient();
+    await apiClient.put('/order/done', {
+      order_id: id
+    });
+
+    const response = await apiClient.get('/order');
+    
+    setOrderList(response.data.orders);
+
+    setModalVisible(false);
+
+  }
+
+  async function handleRefreshOrders() {
+    const apiClient = setupAPIClient();
+
+    const response = await apiClient.get('/order')
+    setOrderList(response.data.orders)
+    
   }
 
   Modal.setAppElement('#__next')
@@ -76,12 +97,19 @@ export default function Dashboard({ orders }: HomeProps) {
       <main className={styles.container}>
         <div className={styles.containerHeader}>
           <h1>Últimos pedidos</h1>
-          <button>
+          <button onClick={handleRefreshOrders}>
             <FiRefreshCcw size={25} color="#3fffa3" />
           </button>
         </div>
         <article className={styles.listOrders}>
-          {orderList.map( item => (
+
+          {orderList.length === 0 && (
+            <span className={styles.emptyList}>
+              Nenhum pedido em aberto
+            </span>
+          )}
+
+          {orderList?.map( item => (
             <section key={item.id} className={styles.orderItem}>
               <button onClick={()=> handleOpenModalView(item.id) }>
                 <div className={styles.tag}></div>
@@ -92,10 +120,13 @@ export default function Dashboard({ orders }: HomeProps) {
         </article>
       </main>
       { modalVisible && (
-        <ModalOrder />
+        <ModalOrder 
+          isOpen={modalVisible}
+          OnRequestClose={handleCloseModal}
+          orders={modalItem}
+          handleFinishItem={handleFinishItem}
+          />
       )}
-      
-
     </div>
     </>
   )
@@ -106,7 +137,6 @@ export const getServerSideProps = canSSRAuth(async (ctx)=> {
 
   const response = await apiClient.get('/order');
 
-  console.log(response.data.orders)
 
   return{
     props: response.data

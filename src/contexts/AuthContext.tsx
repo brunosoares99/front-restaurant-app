@@ -40,7 +40,7 @@ export function signOut() {
     destroyCookie(undefined, '@nextauth.token');
     Router.push('/')
   } catch (error) {
-    console.log('erro ao deslogar')
+    toast.warn("Ops, algo deu errado, tente novamente ou contate o suporte!");
   }
 }
 
